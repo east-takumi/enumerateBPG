@@ -139,10 +139,10 @@ void enumeration(Sequence& s){
     // case 1
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
-	swap(s.s2[i], s.s2[i-1]);
-	enumeration(s);
-	swap(s.s2[i], s.s2[i-1]);
-	break;
+        swap(s.s2[i], s.s2[i-1]);
+        enumeration(s);
+        swap(s.s2[i], s.s2[i-1]);
+        break;
       }
     }
     // case 2
@@ -151,48 +151,48 @@ void enumeration(Sequence& s){
       if(flag && s.s2[i] == LEFT) continue;
       
       if(flag && s.s2[i] == RIGHT){
-	if(s.s2[i-1] == LEFT){
-	  swap(s.s2[i], s.s2[i-1]);
-	  enumeration(s);
-	  swap(s.s2[i], s.s2[i-1]);
-	}
-	break;
+        if(s.s2[i-1] == LEFT){
+          swap(s.s2[i], s.s2[i-1]);
+          enumeration(s);
+          swap(s.s2[i], s.s2[i-1]);
+        }
+        break;
       }
       if(!flag && s.s2[i-1] == LEFT && s.s2[i] == RIGHT) flag = true;
     }
     // case 3 (swap on s1)
-    for(int i=0 ; i<s.s1.size() - 1 ; i++){
+    for(int i=0 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
-	swap(s.s1[i], s.s1[i+1]);
-	enumeration(s);
-	swap(s.s1[i], s.s1[i+1]);
-	break;
+        swap(s.s1[i], s.s1[i+1]);
+        enumeration(s);
+        swap(s.s1[i], s.s1[i+1]);
+        break;
       }
     }
   }
   
   else{
     // case 1
-    for(int i=0 ; i<s.s1.size()-1 ; i++){
+    for(int i=0 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
-	swap(s.s1[i], s.s1[i+1]);
-	enumeration(s);
-	swap(s.s1[i], s.s1[i+1]);
-	break;
+        swap(s.s1[i], s.s1[i+1]);
+        enumeration(s);
+        swap(s.s1[i], s.s1[i+1]);
+        break;
       }
     }
     // case 2
     bool flag = false; // leftmost "]["
-    for(int i=0 ; i<s.s1.size()-1 ; i++){
+    for(int i=0 ; i<s.s1.size() ; i++){
       if(flag && s.s1[i] == RIGHT) continue;
       
       if(flag && s.s1[i] == LEFT){
-	if(s.s1[i+1] == RIGHT){
-	  swap(s.s1[i], s.s1[i+1]);
-	  enumeration(s);
-	  swap(s.s1[i], s.s1[i+1]);
-	}
-	break;
+        if(s.s1[i+1] == RIGHT){
+          swap(s.s1[i], s.s1[i+1]);
+          enumeration(s);
+          swap(s.s1[i], s.s1[i+1]);
+        }
+        break;
       }
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT) flag = true;
     }
