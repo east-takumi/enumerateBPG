@@ -1,14 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <stack>
-#include <array>
 #include <algorithm>
 
 using namespace std;
 
 enum Parenthesis{LEFT, RIGHT};
 int swap_point;
-int size_array;
 // int* connected_value_top = new int[size_array];
 // int* connected_value_bottom = new int[size_array];
 struct date{
@@ -85,7 +83,7 @@ public:
   bool isConnected(){
     int c1, c2;
     c1 = c2 = 0;
-    array<int,2> update_value{0,0};
+    int update_value[2];
 
     if(isParent == 1){
       for(int i=0 ; i<s1.size()-1 ; i++){
@@ -101,24 +99,23 @@ public:
       }
     }
     else if(update_is_s1 == 1) {
-      update_value[0] = data_value.connected_value_top.at(data_value.swap_point)-2;
+      update_value[0]=data_value.connected_value_top[data_value.swap_point]-2;
+      if(update_value[0] == data_value.connected_value_bottom[data_value.swap_point]) return false; 
       update_value[1]=update_value[0]+1;
-      if(update_value[0] == data_value.connected_value_bottom.at(data_value.swap_point)) return false;
-      if(update_value[1] == data_value.connected_value_bottom.at(data_value.swap_point+1)) return false;
+      if(update_value[1] == data_value.connected_value_bottom[data_value.swap_point+1]) return false;
 
-      data_value.connected_value_top.at(data_value.swap_point)=update_value[0];
-      data_value.connected_value_top.at(data_value.swap_point+1)=update_value[1];
+      data_value.connected_value_top[data_value.swap_point]=update_value[0];
+      data_value.connected_value_top[data_value.swap_point+1]=update_value[1];
     }
     else{
-      update_value[0]=data_value.connected_value_bottom.at(data_value.swap_point)+2;
+      update_value[0]=data_value.connected_value_bottom[data_value.swap_point]+2;
+      if(data_value.connected_value_top[data_value.swap_point] == update_value[0]) return false;
       update_value[1]=update_value[0]-1;
-      if(data_value.connected_value_top.at(data_value.swap_point) == update_value[0]) return false;
-      if(data_value.connected_value_top.at(data_value.swap_point+1) == update_value[1]) return false;
+      if(data_value.connected_value_top[data_value.swap_point+1] == update_value[1]) return false;
 
-      data_value.connected_value_bottom.at(data_value.swap_point)=update_value[0];
-      data_value.connected_value_bottom.at(data_value.swap_point+1)=update_value[1];
+      data_value.connected_value_bottom[data_value.swap_point]=update_value[0];
+      data_value.connected_value_bottom[data_value.swap_point+1]=update_value[1];
     }
-    // delete[] update_value;
     return true;
   }
 
@@ -278,7 +275,6 @@ int main(int argc, char** argv){
   int n;
   cout << "Please input a number of vertices: ";
   cin >> n;
-  size_array = n;
 
   for(int j=n ; j<=n ; j++){
     numBPG = 0;
