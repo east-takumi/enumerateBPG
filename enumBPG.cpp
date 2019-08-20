@@ -1,25 +1,30 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <array>
 #include <algorithm>
 
 using namespace std;
 
 enum Parenthesis{LEFT, RIGHT};
-vector<int> swap_point;
-int connected_value[];
-int connected_value_top[];
-int connected_value_bottom[];
-struct data{
-  vector<int> swap_point;
-  int connected_valu_top[];
-  int connected_value_bottom[];
+int swap_point;
+int size_array;
+// int* connected_value_top = new int[size_array];
+// int* connected_value_bottom = new int[size_array];
+struct date{
+  int swap_point;
+  // int* connected_value_top = new int[size_array];
+  // int* connected_value_bottom = new int[size_array];
+  vector<int> connected_value_top;
+  vector<int> connected_value_bottom;
 };
-class data data_value;
-stack<data> recover_data;
+class date data_value;
+stack<date> recover_data;
 
 
 unsigned long numBPG=0;
+bool isParent=true;
+bool update_is_s1=true;
 
 class Sequence{
 public:
@@ -71,7 +76,6 @@ public:
     if(p == q){
       Sequence sv = flipVertical();
       if(sv < *this) return false;
-      
       Sequence sh = flipHorizontal();
       if(sh < *this) return false;
     }
@@ -81,34 +85,40 @@ public:
   bool isConnected(){
     int c1, c2;
     c1 = c2 = 0;
-    connected_value_top = data_value.connected_value_top;
-    connected_value_bottom = data_value.connected_value_bottom;
+    array<int,2> update_value{0,0};
 
-    if(Root){
+    if(isParent == 1){
       for(int i=0 ; i<s1.size()-1 ; i++){
         if(s1[i] == LEFT) c1++;
         else c1--;
-        connected_value[i]
 
         if(s2[i] == RIGHT) c2++;
         else c2--;
 
         if(c1 == c2) return false;
-        connected_value_top[i]=c1;
-        connected_value_bottom[i]=c2;
+        data_value.connected_value_top.push_back(c1);
+        data_value.connected_value_bottom.push_back(c2);
       }
     }
-    else {
-      if(s1[swap_point()] == LEFT) connected_value_top[swap_point()]+=2;
-      else connected_value_top[swap_point()]-=2;
-      
-      if(s2[(swap_point())] == RIGHT) connected_value_bottom[swap_point()]+=2;
-      else connected_value_bottom[swap_point()]-=2;
+    else if(update_is_s1 == 1) {
+      update_value[0] = data_value.connected_value_top.at(data_value.swap_point)-2;
+      update_value[1]=update_value[0]+1;
+      if(update_value[0] == data_value.connected_value_bottom.at(data_value.swap_point)) return false;
+      if(update_value[1] == data_value.connected_value_bottom.at(data_value.swap_point+1)) return false;
 
-      if(connected_value_top[swap_point()] == connected_value_bottom[swap_point()]) return false;
+      data_value.connected_value_top.at(data_value.swap_point)=update_value[0];
+      data_value.connected_value_top.at(data_value.swap_point+1)=update_value[1];
     }
-    data_value.connected_value_top=connected_value_top;
-    data_value.connected_value_bottom=connected_value_bottom;
+    else{
+      update_value[0]=data_value.connected_value_bottom.at(data_value.swap_point)+2;
+      update_value[1]=update_value[0]-1;
+      if(data_value.connected_value_top.at(data_value.swap_point) == update_value[0]) return false;
+      if(data_value.connected_value_top.at(data_value.swap_point+1) == update_value[1]) return false;
+
+      data_value.connected_value_bottom.at(data_value.swap_point)=update_value[0];
+      data_value.connected_value_bottom.at(data_value.swap_point+1)=update_value[1];
+    }
+    // delete[] update_value;
     return true;
   }
 
@@ -158,24 +168,35 @@ public:
 
 };
 
+void push_data(int point){
+  data_value.swap_point = point;
+  recover_data.push(data_value);
+}
+
+void recover_and_pop(){
+  data_value=recover_data.top();
+  recover_data.pop();
+}
+
 
 void enumeration(Sequence& s){
-  data_value = recover_data.top();
   if(!s.isCanonical() || !s.isConnected()){
     return;
   }
 
   s.output();
   numBPG++;
+  isParent = 0;
 
   if(s.isS1Root()){
     // case 1
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
         swap(s.s2[i], s.s2[i-1]);
-        data_value.swap_point(i-1);
-        recover_data.push_back(data_value);
+        push_data(i-1);
+        update_is_s1 = 0;
         enumeration(s);
+        recover_and_pop();
         swap(s.s2[i], s.s2[i-1]);
         break;
       }
@@ -188,7 +209,10 @@ void enumeration(Sequence& s){
       if(flag && s.s2[i] == RIGHT){
         if(s.s2[i-1] == LEFT){
           swap(s.s2[i], s.s2[i-1]);
+          push_data(i-1);
+          update_is_s1 = 0;
           enumeration(s);
+          recover_and_pop();
           swap(s.s2[i], s.s2[i-1]);
         }
         break;
@@ -199,7 +223,10 @@ void enumeration(Sequence& s){
     for(int i=0 ; i<s.s1.size() - 1 ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
+        push_data(i);
+        update_is_s1 = 1;
         enumeration(s);
+        recover_and_pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -211,7 +238,10 @@ void enumeration(Sequence& s){
     for(int i=0 ; i<s.s1.size()-1 ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
+        push_data(i);
+        update_is_s1 = 1;
         enumeration(s);
+        recover_and_pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -224,7 +254,10 @@ void enumeration(Sequence& s){
       if(flag && s.s1[i] == LEFT){
         if(s.s1[i+1] == RIGHT){
           swap(s.s1[i], s.s1[i+1]);
+          push_data(i);
+          update_is_s1 = 1;
           enumeration(s);
+          recover_and_pop();
           swap(s.s1[i], s.s1[i+1]);
         }
         break;
@@ -245,11 +278,16 @@ int main(int argc, char** argv){
   int n;
   cout << "Please input a number of vertices: ";
   cin >> n;
+  size_array = n;
 
   for(int j=n ; j<=n ; j++){
     numBPG = 0;
     for(int i=1 ; i<=j/2 ; i++){
       cerr << "p, q: " << j-i << ", " << i << endl;
+      data_value.connected_value_top.clear();
+      data_value.connected_value_bottom.clear();
+      isParent = 1;
+      update_is_s1 = 1;
       enumeration(j-i, i);
       cout << numBPG << endl;
     }
