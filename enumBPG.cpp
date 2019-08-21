@@ -7,22 +7,19 @@ using namespace std;
 
 enum Parenthesis{LEFT, RIGHT};
 int swap_point;
-// int* connected_value_top = new int[size_array];
-// int* connected_value_bottom = new int[size_array];
 struct date{
   int swap_point;
-  // int* connected_value_top = new int[size_array];
-  // int* connected_value_bottom = new int[size_array];
   vector<int> connected_value_top;
   vector<int> connected_value_bottom;
 };
 class date data_value;
 stack<date> recover_data;
+vector<int> index_point;
 
 
 unsigned long numBPG=0;
-bool isParent=true;
-bool update_is_s1=true;
+bool isParent=1;
+bool update_is_s1=1;
 
 class Sequence{
 public:
@@ -63,8 +60,8 @@ public:
   }
 
   Sequence rotate(){
-    Sequence sv = flipVertical();
-    return sv.flipHorizontal();
+    Sequence sv = flipHorizontal();
+    return sv.flipVertical();
   }
 
   bool isCanonical(){
@@ -86,7 +83,7 @@ public:
     int update_value[2];
 
     if(isParent == 1){
-      for(int i=0 ; i<s1.size()-1 ; i++){
+      for(int i=0; i<s1.size()-1 ; i++){
         if(s1[i] == LEFT) c1++;
         else c1--;
 
@@ -120,11 +117,14 @@ public:
   }
 
   bool isS1Root(){
-    bool flag = false; // maintain appearing RIGHT
-    for(int i=0 ; i<s1.size() ; i++){
-      if(flag == true && s1[i] == LEFT) return false;
-      if(s1[i] == RIGHT) flag = true;
-    }
+    // bool flag = false; // maintain appearing RIGHT
+    // for(int i=0 ; i<s1.size() ; i++){
+    //   if(flag == true && s1[i] == LEFT) return false;
+    //   if(s1[i] == RIGHT) flag = true;
+    // }
+    auto iter_right = find(s1.begin(), s1.end(), RIGHT);
+    auto iter_left = find(iter_right, s1.end(), LEFT);
+    if(iter_left != s1.end()) return false;
     return true;
   }
 
@@ -186,6 +186,18 @@ void enumeration(Sequence& s){
   isParent = 0;
 
   if(s.isS1Root()){
+   
+    // auto iter = find(s.s2.begin(), s.s2.end(), RIGHT);
+    // auto result = find(iter, s.s2.begin(), LEFT);
+    // if(result!=s.s2.begin()) {
+    //   size_t index = distance(s.s2.begin(), result);
+    //   swap(s.s2[index], s.s2[index-1]);
+    //   push_data(index);
+    //   update_is_s1 = 0;
+    //   enumeration(s);
+    //   recover_and_pop();
+    //   swap(s.s2[index], s.s2[index+1]);
+    // }
     // case 1
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
@@ -202,7 +214,6 @@ void enumeration(Sequence& s){
     bool flag = false; // maintain Rightmost "]["
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(flag && s.s2[i] == LEFT) continue;
-      
       if(flag && s.s2[i] == RIGHT){
         if(s.s2[i-1] == LEFT){
           swap(s.s2[i], s.s2[i-1]);
@@ -216,7 +227,7 @@ void enumeration(Sequence& s){
       }
       if(!flag && s.s2[i-1] == LEFT && s.s2[i] == RIGHT) flag = true;
     }
-    // case 3 (swap on s1)
+    // // case 3 (swap on s1)
     for(int i=0 ; i<s.s1.size() - 1 ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
