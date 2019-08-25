@@ -12,6 +12,7 @@ list<int> index_point_r, index_point_v, index_point_h;
 
 unsigned long numBPG=0;
 bool updateRoot = false;
+bool updateS1 = false;
 
 class Sequence{
 public:
@@ -93,6 +94,7 @@ public:
       indexPoint(*this, sr, index_point_r);
     }
     else{
+      
 
       if(checkCanonical(index_point_r) == false) return false;
       if(p == q){
@@ -114,15 +116,6 @@ public:
       else c2--;
 
       if(c1 == c2) return false;
-    }
-    return true;
-  }
-
-  bool isS1Root(){
-    bool flag = false; // maintain appearing RIGHT
-    for(int i=0 ; i<s1.size() ; i++){
-      if(flag == true && s1[i] == LEFT) return false;
-      if(s1[i] == RIGHT) flag = true;
     }
     return true;
   }
@@ -174,7 +167,8 @@ void enumeration(Sequence& s){
   numBPG++;
   updateRoot = true;
 
-  if(s.isS1Root()){
+  // if(s.isS1Root()){
+  if(updateS1 == false){
     // case 1
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
@@ -207,8 +201,10 @@ void enumeration(Sequence& s){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
         recover_point.push(i);
+        updateS1 = true;
         enumeration(s);
         recover_point.pop();
+        updateS1 = false;
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -220,9 +216,11 @@ void enumeration(Sequence& s){
     for(int i=0 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
-        recover_point.push(i);
+       recover_point.push(i);
+        updateS1 = true;
         enumeration(s);
         recover_point.pop();
+        updateS1 = false;
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -235,9 +233,11 @@ void enumeration(Sequence& s){
       if(flag && s.s1[i] == LEFT){
         if(s.s1[i+1] == RIGHT){
           swap(s.s1[i], s.s1[i+1]);
-          recover_point.push(i);
-          enumeration(s);
-          recover_point.pop();
+         recover_point.push(i);
+        updateS1 = true;
+        enumeration(s);
+        recover_point.pop();
+        updateS1 = false;
           swap(s.s1[i], s.s1[i+1]);
         }
         break;
