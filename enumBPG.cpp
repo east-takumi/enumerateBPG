@@ -1,10 +1,12 @@
 #include <iostream>
 #include <vector>
+#include <stack>
 #include <algorithm>
 
 using namespace std;
 
 enum Parenthesis{LEFT, RIGHT};
+stack<int> recover_point;
 
 unsigned long numBPG=0;
 
@@ -140,6 +142,7 @@ void enumeration(Sequence& s){
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
         swap(s.s2[i], s.s2[i-1]);
+        recover_point.push(i-1);
         enumeration(s);
         swap(s.s2[i], s.s2[i-1]);
         break;
@@ -153,7 +156,9 @@ void enumeration(Sequence& s){
       if(flag && s.s2[i] == RIGHT){
         if(s.s2[i-1] == LEFT){
           swap(s.s2[i], s.s2[i-1]);
+          recover_point.push(i-1);
           enumeration(s);
+          recover_point.pop();
           swap(s.s2[i], s.s2[i-1]);
         }
         break;
@@ -164,7 +169,9 @@ void enumeration(Sequence& s){
     for(int i=0 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
+        recover_point.push(i);
         enumeration(s);
+        recover_point.pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -176,7 +183,9 @@ void enumeration(Sequence& s){
     for(int i=0 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
+        recover_point.push(i);
         enumeration(s);
+        recover_point.pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -189,7 +198,9 @@ void enumeration(Sequence& s){
       if(flag && s.s1[i] == LEFT){
         if(s.s1[i+1] == RIGHT){
           swap(s.s1[i], s.s1[i+1]);
+          recover_point.push(i);
           enumeration(s);
+          recover_point.pop();
           swap(s.s1[i], s.s1[i+1]);
         }
         break;
