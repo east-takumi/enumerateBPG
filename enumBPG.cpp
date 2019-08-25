@@ -93,6 +93,7 @@ public:
       indexPoint(*this, sr, index_point_r);
     }
     else{
+
       if(checkCanonical(index_point_r) == false) return false;
       if(p == q){
         if(checkCanonical(index_point_v) == false) return false;
@@ -250,6 +251,9 @@ void enumeration(Sequence& s){
 void enumeration(int p, int q){
   Sequence s(p, q);
   updateRoot = false;
+  index_point_h.clear();
+  index_point_r.clear();
+  index_point_v.clear();
   enumeration(s);
 }
 
