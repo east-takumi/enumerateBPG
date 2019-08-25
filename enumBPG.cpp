@@ -7,24 +7,21 @@
 using namespace std;
 
 enum Parenthesis{LEFT, RIGHT};
-int swap_point;
-int size_array;
-// int* connected_value_top = new int[size_array];
-// int* connected_value_bottom = new int[size_array];
-struct date{
-  int swap_point;
-  // int* connected_value_top = new int[size_array];
-  // int* connected_value_bottom = new int[size_array];
-  vector<int> connected_value_top;
-  vector<int> connected_value_bottom;
-};
-class date data_value;
-stack<date> recover_data;
-
+vector<int> connected_value_top;
+vector<int> connected_value_bottom;
+// struct backup{
+//   int swap_point;
+//   bool update_connected_value;
+// };
+stack<int> recover_point;
+// bool update_connected_value = false;
+// stack<bool> isUpdateValue;
+bool isCano = true;
 
 unsigned long numBPG=0;
 bool isParent=true;
 bool update_is_s1=true;
+
 
 class Sequence{
 public:
@@ -71,22 +68,35 @@ public:
 
   bool isCanonical(){
     Sequence sr = rotate();
-    if(sr < *this) return false;
-
+    if(sr < *this) {
+      isCano = false;
+      return false;
+    }
     if(p == q){
       Sequence sv = flipVertical();
-      if(sv < *this) return false;
+      if(sv < *this) {
+        isCano = false;
+        return false;
+      }
       Sequence sh = flipHorizontal();
-      if(sh < *this) return false;
+      if(sh < *this) {
+        isCano = false;
+        return false;
+      }
     }
+    isCano = true;
     return true;
   }
 
   bool isConnected(){
     int c1, c2;
     c1 = c2 = 0;
-    array<int,2> update_value{0,0};
+    int update_value_0, update_value_1 = 0;
 
+    if(isCano == false){
+      return false;
+    }
+    else{
     if(isParent == 1){
       for(int i=0 ; i<s1.size()-1 ; i++){
         if(s1[i] == LEFT) c1++;
@@ -96,38 +106,52 @@ public:
         else c2--;
 
         if(c1 == c2) return false;
-        data_value.connected_value_top.push_back(c1);
-        data_value.connected_value_bottom.push_back(c2);
+        connected_value_top.push_back(c1);
+        connected_value_bottom.push_back(c2);
       }
     }
     else if(update_is_s1 == 1) {
-      update_value[0] = data_value.connected_value_top.at(data_value.swap_point)-2;
-      update_value[1]=update_value[0]+1;
-      if(update_value[0] == data_value.connected_value_bottom.at(data_value.swap_point)) return false;
-      if(update_value[1] == data_value.connected_value_bottom.at(data_value.swap_point+1)) return false;
-
-      data_value.connected_value_top.at(data_value.swap_point)=update_value[0];
-      data_value.connected_value_top.at(data_value.swap_point+1)=update_value[1];
+      update_value_0 = connected_value_top[recover_point.top()]-2;
+      update_value_1 = update_value_0 + 1;
+      if(update_value_0 == connected_value_bottom[recover_point.top()]) {
+        //  update_connected_value = false;
+         return false;
+      }
+      if(update_value_1 == connected_value_bottom[recover_point.top()+1]){
+        // update_connected_value = false;
+        return false;
+      }
+      connected_value_top[recover_point.top()] = update_value_0;
+      connected_value_top[recover_point.top()+1] = update_value_1;
+      // update_connected_value = true;
     }
     else{
-      update_value[0]=data_value.connected_value_bottom.at(data_value.swap_point)+2;
-      update_value[1]=update_value[0]-1;
-      if(data_value.connected_value_top.at(data_value.swap_point) == update_value[0]) return false;
-      if(data_value.connected_value_top.at(data_value.swap_point+1) == update_value[1]) return false;
-
-      data_value.connected_value_bottom.at(data_value.swap_point)=update_value[0];
-      data_value.connected_value_bottom.at(data_value.swap_point+1)=update_value[1];
+      update_value_0 = connected_value_bottom[recover_point.top()]+2;
+      update_value_1 = update_value_0 - 1;
+      if(connected_value_top[recover_point.top()] == update_value_0) {
+        // update_connected_value = false;
+        return false;
+      }
+      if(connected_value_top[recover_point.top()+1] == update_value_1) {
+        // update_connected_value = false;
+        return false;
+      }
+      connected_value_bottom[recover_point.top()] = update_value_0;
+      connected_value_bottom[recover_point.top()+1] = update_value_1;
+      // update_connected_value = true;
     }
-    // delete[] update_value;
+    }
+    // isUpdateValue.push(true);
     return true;
   }
 
   bool isS1Root(){
     bool flag = false; // maintain appearing RIGHT
-    for(int i=0 ; i<s1.size() ; i++){
+    for(int i=0 ; i<s1.size()-1 ; i++){
       if(flag == true && s1[i] == LEFT) return false;
       if(s1[i] == RIGHT) flag = true;
     }
+    // printf("s1Root ");
     return true;
   }
 
@@ -168,19 +192,28 @@ public:
 
 };
 
-void push_data(int point){
-  data_value.swap_point = point;
-  recover_data.push(data_value);
+void recover_and_pop_s1(){
+  connected_value_bottom[recover_point.top()] += 2;
+  connected_value_bottom[recover_point.top()+1] -= 2;
+  recover_point.pop();
 }
 
-void recover_and_pop(){
-  data_value=recover_data.top();
-  recover_data.pop();
+void recover_and_pop_s2(){
+  connected_value_top[recover_point.top()] -= 2;
+  connected_value_top[recover_point.top()+1] += 2;
+  recover_point.pop();
 }
 
 
 void enumeration(Sequence& s){
+  printf("update_is_s1：%d\n", update_is_s1);
+  // update_connected_value = true;
   if(!s.isCanonical() || !s.isConnected()){
+    if(!s.isCanonical()) printf("not canonical \n");
+    if(!s.isConnected()) printf("not connected \n");
+    // printf("%d\n", 2);
+    // update_connected_value = false;
+    // isUpdateValue.push(false);
     return;
   }
 
@@ -193,10 +226,21 @@ void enumeration(Sequence& s){
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
         swap(s.s2[i], s.s2[i-1]);
-        push_data(i-1);
+        recover_point.push(i-1);
         update_is_s1 = 0;
+        // printf("case1 ");
+        // for(int i=0; i<s.s1.size(); i++){
+        //   printf("%d",s.s1[i]);
+        // }
+        // printf(" ");
+        // for(int i=0; i<s.s2.size(); i++){
+        //   printf("%d",s.s2[i]);
+        // }
+        // printf("\n");
         enumeration(s);
-        recover_and_pop();
+        // isUpdateValue.pop();
+        if(isCano == true) recover_and_pop_s2();
+        // isUpdateValue.pop();
         swap(s.s2[i], s.s2[i-1]);
         break;
       }
@@ -209,10 +253,21 @@ void enumeration(Sequence& s){
       if(flag && s.s2[i] == RIGHT){
         if(s.s2[i-1] == LEFT){
           swap(s.s2[i], s.s2[i-1]);
-          push_data(i-1);
+          recover_point.push(i-1);
           update_is_s1 = 0;
+          // printf("case2 ");
+          // for(int i=0; i<s.s1.size(); i++){
+          //   printf("%d",s.s1[i]);
+          // }
+          // printf(" ");
+          // for(int i=0; i<s.s2.size(); i++){
+          //   printf("%d",s.s2[i]);
+          // }
+          // printf("\n");
           enumeration(s);
-          recover_and_pop();
+          // isUpdateValue.pop();
+          if(isCano == true) recover_and_pop_s2();
+          // isUpdateValue.pop();
           swap(s.s2[i], s.s2[i-1]);
         }
         break;
@@ -220,44 +275,73 @@ void enumeration(Sequence& s){
       if(!flag && s.s2[i-1] == LEFT && s.s2[i] == RIGHT) flag = true;
     }
     // case 3 (swap on s1)
-    for(int i=0 ; i<s.s1.size() - 1 ; i++){
+    for(int i=1 ; i<s.s1.size() - 1 ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
-        push_data(i);
+        recover_point.push(i);
         update_is_s1 = 1;
+        // printf("case3 ");
+        // for(int i=0; i<s.s1.size(); i++){
+        //   printf("%d",s.s1[i]);
+        // }
+        // printf(" ");
+        // for(int i=0; i<s.s2.size(); i++){
+        //   printf("%d",s.s2[i]);
+        // }
+        printf("\n");
         enumeration(s);
-        recover_and_pop();
+        if(isCano == true) recover_and_pop_s1();
+        // isUpdateValue.pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
     }
   }
-  
   else{
     // case 1
-    for(int i=0 ; i<s.s1.size()-1 ; i++){
+    for(int i=1 ; i<s.s1.size()-1 ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
-        push_data(i);
+        recover_point.push(i);
         update_is_s1 = 1;
+        // printf("case4 ");
+        // for(int i=0; i<s.s1.size(); i++){
+        //   printf("%d",s.s1[i]);
+        // }
+        // printf(" ");
+        // for(int i=0; i<s.s2.size(); i++){
+        //   printf("%d",s.s2[i]);
+        // }
+        // printf("\n");
         enumeration(s);
-        recover_and_pop();
+       if(isCano == true) recover_and_pop_s1();
+        // isUpdateValue.pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
     }
     // case 2
     bool flag = false; // leftmost "]["
-    for(int i=0 ; i<s.s1.size()-1 ; i++){
+    for(int i=1 ; i<s.s1.size()-1 ; i++){
       if(flag && s.s1[i] == RIGHT) continue;
       
       if(flag && s.s1[i] == LEFT){
         if(s.s1[i+1] == RIGHT){
           swap(s.s1[i], s.s1[i+1]);
-          push_data(i);
+          recover_point.push(i);
           update_is_s1 = 1;
+          // printf("case5 ");
+          // for(int i=0; i<s.s1.size(); i++){
+          //   printf("%d",s.s1[i]);
+          // }
+          // printf(" ");
+          // for(int i=0; i<s.s2.size(); i++){
+          //   printf("%d",s.s2[i]);
+          // }
+          // printf("\n");
           enumeration(s);
-          recover_and_pop();
+          if(isCano == true) recover_and_pop_s1();
+          // isUpdateValue.pop();
           swap(s.s1[i], s.s1[i+1]);
         }
         break;
@@ -278,14 +362,14 @@ int main(int argc, char** argv){
   int n;
   cout << "Please input a number of vertices: ";
   cin >> n;
-  size_array = n;
 
   for(int j=n ; j<=n ; j++){
     numBPG = 0;
     for(int i=1 ; i<=j/2 ; i++){
       cerr << "p, q: " << j-i << ", " << i << endl;
-      data_value.connected_value_top.clear();
-      data_value.connected_value_bottom.clear();
+      connected_value_top.clear();
+      connected_value_bottom.clear();
+      // isUpdateValue.clear();
       isParent = 1;
       update_is_s1 = 1;
       enumeration(j-i, i);
