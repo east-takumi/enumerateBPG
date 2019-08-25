@@ -7,6 +7,7 @@ using namespace std;
 enum Parenthesis{LEFT, RIGHT};
 
 unsigned long numBPG=0;
+bool updateS1 = false;
 
 class Sequence{
 public:
@@ -80,15 +81,6 @@ public:
     return true;
   }
 
-  bool isS1Root(){
-    bool flag = false; // maintain appearing RIGHT
-    for(int i=0 ; i<s1.size() ; i++){
-      if(flag == true && s1[i] == LEFT) return false;
-      if(s1[i] == RIGHT) flag = true;
-    }
-    return true;
-  }
-
   bool operator<(const Sequence& rhs){
     for(int i=0 ; i<s1.size() ; i++){
       if(s1[i] == rhs.s1[i]) continue;
@@ -135,7 +127,8 @@ void enumeration(Sequence& s){
   s.output();
   numBPG++;
 
-  if(s.isS1Root()){
+  // if(s.isS1Root()){
+  if(updateS1 == false){
     // case 1
     for(int i=s.s2.size()-1 ; i>0 ; i--){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
@@ -164,7 +157,9 @@ void enumeration(Sequence& s){
     for(int i=0 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
+        updateS1 = true;
         enumeration(s);
+        updateS1 = false;
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -176,7 +171,9 @@ void enumeration(Sequence& s){
     for(int i=0 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
+        updateS1 = true;
         enumeration(s);
+        updateS1 = false;
         swap(s.s1[i], s.s1[i+1]);
         break;
       }
@@ -189,7 +186,9 @@ void enumeration(Sequence& s){
       if(flag && s.s1[i] == LEFT){
         if(s.s1[i+1] == RIGHT){
           swap(s.s1[i], s.s1[i+1]);
+          updateS1 = true;
           enumeration(s);
+          updateS1 = false;
           swap(s.s1[i], s.s1[i+1]);
         }
         break;
