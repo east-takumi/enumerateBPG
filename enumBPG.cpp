@@ -1,14 +1,17 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <list>
 #include <algorithm>
 
 using namespace std;
 
 enum Parenthesis{LEFT, RIGHT};
 stack<int> recover_point;
+list<int> index_point_r, index_point_v, index_point_h;
 
 unsigned long numBPG=0;
+bool updateRoot = false;
 
 class Sequence{
 public:
@@ -53,16 +56,48 @@ public:
     return sv.flipHorizontal();
   }
 
-  bool isCanonical(){
-    Sequence sr = rotate();
-    if(sr < *this) return false;
+  void indexPoint(Sequence& root, Sequence& edited, list<int> index_point){
+    for(int i=1; i<s1.size()-1; i++){
+      if(root.s1[i]!=edited.s1[i]){
+        index_point.push_back(i);
+      }
+    }
+    for(int i=1; i<s2.size()-1; i++){
+      if(root.s2[i]!=edited.s2[i])
+        index_point.push_back(i+s2.size());
+    }
+  }
 
-    if(p == q){
-      Sequence sv = flipVertical();
-      if(sv < *this) return false;
-      
-      Sequence sh = flipHorizontal();
-      if(sh < *this) return false;
+  bool checkCanonical(list<int>){
+    if(index_point_r.front() < s1.size()){
+      if(s1[index_point_r.front()] == 1) return false;
+    }
+    else{
+      if(s2[index_point_r.front()] == 1) return false;
+    }
+    return true;
+  }
+
+  bool isCanonical(){
+    if(updateRoot == false){
+      Sequence sr = rotate();
+      if(sr < *this) return false;
+      if(p == q){
+        Sequence sv = flipVertical();
+        if(sv < *this) return false;
+        Sequence sh = flipHorizontal();
+        if(sh < *this) return false;
+        indexPoint(*this, sv, index_point_v);
+        indexPoint(*this, sh, index_point_h);
+      }
+      indexPoint(*this, sr, index_point_r);
+    }
+    else{
+      if(checkCanonical(index_point_r) == false) return false;
+      if(p == q){
+        if(checkCanonical(index_point_v) == false) return false;
+        if(checkCanonical(index_point_h) == false) return false;
+      }
     }
     return true;
   }
@@ -136,6 +171,7 @@ void enumeration(Sequence& s){
 
   s.output();
   numBPG++;
+  updateRoot = true;
 
   if(s.isS1Root()){
     // case 1
@@ -213,6 +249,7 @@ void enumeration(Sequence& s){
 
 void enumeration(int p, int q){
   Sequence s(p, q);
+  updateRoot = false;
   enumeration(s);
 }
 
