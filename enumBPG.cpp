@@ -7,8 +7,13 @@ using namespace std;
 
 enum Parenthesis{LEFT, RIGHT};
 stack<int> recover_point;
+vector<int> connected_value_top;
+vector<int> connected_value_bottom;
 
-unsigned long numBPG=0;
+unsigned long numBPG = 0;
+bool isParent = true;
+bool update_is_s1 = true;
+bool update_connected_value = false;
 
 class Sequence{
 public:
@@ -70,15 +75,38 @@ public:
   bool isConnected(){
     int c1, c2;
     c1 = c2 = 0;
-    for(int i=0 ; i<s1.size()-1 ; i++){
-      if(s1[i] == LEFT) c1++;
-      else c1--;
-      
-      if(s2[i] == RIGHT) c2++;
-      else c2--;
+    int update_value_0, update_value_1 = 0;
+    if(isParent == 1){
+      for(int i=0 ; i<s1.size()-1 ; i++){
+        if(s1[i] == LEFT) c1++;
+        else c1--;
+        if(s2[i] == RIGHT) c2++;
+        else c2--;
+        if(c1 == c2) return false;
 
-      if(c1 == c2) return false;
+        connected_value_top.push_back(c1);
+        connected_value_bottom.push_back(c2);
+      }
     }
+     else if(update_is_s1 == true) {
+      update_value_0 = connected_value_top[recover_point.top()] - 2;
+      update_value_1 = update_value_0 + 1;
+      if(update_value_0 == connected_value_bottom[recover_point.top()]) return false;
+      if(update_value_1 == connected_value_bottom[recover_point.top()+1]) return false;
+
+      connected_value_top[recover_point.top()] = update_value_0;
+      connected_value_top[recover_point.top()+1] = update_value_1;
+    }
+    else{
+      update_value_0 = connected_value_bottom[recover_point.top()] + 2;
+      update_value_1 = update_value_0 - 1;
+      if(connected_value_top[recover_point.top()] == update_value_0) return false;
+      if(connected_value_top[recover_point.top()+1] == update_value_1) return false;
+
+      connected_value_bottom[recover_point.top()] = update_value_0;
+      connected_value_bottom[recover_point.top()+1] = update_value_1;
+    }
+    update_connected_value = true;
     return true;
   }
 
@@ -128,14 +156,28 @@ public:
 
 };
 
+void recover_connected_value_s1(){
+  connected_value_bottom[recover_point.top()] += 2;
+  connected_value_bottom[recover_point.top()+1] -= 2;
+  update_connected_value = true;
+}
+
+void recover_connected_value_s2(){
+  connected_value_top[recover_point.top()] -= 2;
+  connected_value_top[recover_point.top()+1] += 2;
+  update_connected_value = true;
+}
+
 
 void enumeration(Sequence& s){
   if(!s.isCanonical() || !s.isConnected()){
+    update_connected_value = false;
     return;
   }
 
   s.output();
   numBPG++;
+  isParent = 0;
 
   if(s.isS1Root()){
     // case 1
@@ -143,7 +185,10 @@ void enumeration(Sequence& s){
       if(s.s2[i-1] == LEFT && s.s2[i] == RIGHT){
         swap(s.s2[i], s.s2[i-1]);
         recover_point.push(i-1);
+        update_is_s1 = false;
         enumeration(s);
+        if(update_connected_value == true) recover_connected_value_s2();
+        recover_point.pop();
         swap(s.s2[i], s.s2[i-1]);
         break;
       }
@@ -157,7 +202,9 @@ void enumeration(Sequence& s){
         if(s.s2[i-1] == LEFT){
           swap(s.s2[i], s.s2[i-1]);
           recover_point.push(i-1);
+          update_is_s1 = false;
           enumeration(s);
+          if(update_connected_value == true) recover_connected_value_s2();
           recover_point.pop();
           swap(s.s2[i], s.s2[i-1]);
         }
@@ -166,11 +213,13 @@ void enumeration(Sequence& s){
       if(!flag && s.s2[i-1] == LEFT && s.s2[i] == RIGHT) flag = true;
     }
     // case 3 (swap on s1)
-    for(int i=0 ; i<s.s1.size() ; i++){
+    for(int i=1 ; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
         recover_point.push(i);
+        update_is_s1 = true;
         enumeration(s);
+        if(update_connected_value == true) recover_connected_value_s1();
         recover_point.pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
@@ -180,11 +229,13 @@ void enumeration(Sequence& s){
   
   else{
     // case 1
-    for(int i=0 ; i<s.s1.size() ; i++){
+    for(int i=1; i<s.s1.size() ; i++){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT){
         swap(s.s1[i], s.s1[i+1]);
         recover_point.push(i);
+        update_is_s1 = true;
         enumeration(s);
+        if(update_connected_value == true) recover_connected_value_s1();
         recover_point.pop();
         swap(s.s1[i], s.s1[i+1]);
         break;
@@ -192,14 +243,16 @@ void enumeration(Sequence& s){
     }
     // case 2
     bool flag = false; // leftmost "]["
-    for(int i=0 ; i<s.s1.size() ; i++){
+    for(int i=1 ; i<s.s1.size() ; i++){
       if(flag && s.s1[i] == RIGHT) continue;
       
       if(flag && s.s1[i] == LEFT){
         if(s.s1[i+1] == RIGHT){
           swap(s.s1[i], s.s1[i+1]);
           recover_point.push(i);
+          update_is_s1 = true;
           enumeration(s);
+          if(update_connected_value == true) recover_connected_value_s1();
           recover_point.pop();
           swap(s.s1[i], s.s1[i+1]);
         }
@@ -213,6 +266,8 @@ void enumeration(Sequence& s){
 
 void enumeration(int p, int q){
   Sequence s(p, q);
+  isParent = true;
+  update_is_s1 = true;
   enumeration(s);
 }
 
@@ -226,6 +281,8 @@ int main(int argc, char** argv){
     numBPG = 0;
     for(int i=1 ; i<=j/2 ; i++){
       cerr << "p, q: " << j-i << ", " << i << endl;
+      connected_value_top.clear();
+      connected_value_bottom.clear();
       enumeration(j-i, i);
       cout << numBPG << endl;
     }
