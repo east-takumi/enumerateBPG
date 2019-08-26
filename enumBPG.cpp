@@ -88,16 +88,6 @@ public:
         connected_value_top.push_back(c1);
         connected_value_bottom.push_back(c2);
       }
-
-    //  printf("value：");
-    //   for(int i=0; i<s1.size() ; i++){
-    //     printf("%d", connected_value_top[i]);
-    //   }
-    //   printf(" ");
-    //   for(int i=0; i<s2.size() ; i++){
-    //     printf("%d", connected_value_bottom[i]);
-    //   }
-    //   printf("\n"); 
     }
      else if(update_is_s1 == true) {
       update_value_0 = connected_value_top[recover_point.top()] - 2;
@@ -105,21 +95,8 @@ public:
       if(update_value_0 == connected_value_bottom[recover_point.top()]) return false;
       if(update_value_1 == connected_value_bottom[recover_point.top()+1]) return false;
 
-      // printf("value_top：%d, %d\n", update_value_0, update_value_1);
-      // printf("value_bottom：%d, %d\n", connected_value_bottom[recover_point.top()], connected_value_bottom[recover_point.top()+1]);
-
       connected_value_top[recover_point.top()] = update_value_0;
       connected_value_top[recover_point.top()+1] = update_value_1;
-
-      // printf("value：");
-      // for(int i=0; i<s1.size() ; i++){
-      //   printf("%d", connected_value_top[i]);
-      // }
-      // printf(" ");
-      // for(int i=0; i<s2.size() ; i++){
-      //   printf("%d", connected_value_bottom[i]);
-      // }
-      // printf("\n");
     }
     else{
       update_value_0 = connected_value_bottom[recover_point.top()] + 2;
@@ -127,23 +104,9 @@ public:
       if(connected_value_top[recover_point.top()] == update_value_0) return false;
       if(connected_value_top[recover_point.top()+1] == update_value_1) return false;
 
-      // printf("value_bottom：%d, %d\n", update_value_0, update_value_1);
-      // printf("value_top：%d, %d\n", connected_value_top[recover_point.top()], connected_value_top[recover_point.top()+1]);
-
       connected_value_bottom[recover_point.top()] = update_value_0;
       connected_value_bottom[recover_point.top()+1] = update_value_1;
-
-      //  printf("value：");
-      // for(int i=0; i<s1.size() ; i++){
-      //   printf("%d", connected_value_top[i]);
-      // }
-      // printf(" ");
-      // for(int i=0; i<s2.size() ; i++){
-      //   printf("%d", connected_value_bottom[i]);
-      // }
-      // printf("\n");
     }
-    update_connected_value = true;
     return true;
   }
 
@@ -185,22 +148,24 @@ public:
 };
 
 void recover_connected_value_s1(){
-  connected_value_top[recover_point.top()] -= 2;
-  connected_value_top[recover_point.top()+1] += 2;
-  // update_connected_value = true;
+  int update_value = 0;
+  connected_value_top[recover_point.top()] += 2;
+  update_value = connected_value_top[recover_point.top()];
+  connected_value_top[recover_point.top()+1] = update_value - 1;
 }
 
 void recover_connected_value_s2(){
-  connected_value_bottom[recover_point.top()] += 2;
-  connected_value_bottom[recover_point.top()+1] -= 2;
-  // update_connected_value = true;
+  int update_value = 0;
+  connected_value_bottom[recover_point.top()] -= 2;
+  update_value = connected_value_bottom[recover_point.top()];
+  connected_value_bottom[recover_point.top()+1] = update_value + 1;
 }
 
 
 void enumeration(Sequence& s){
-  // printf("update_connnected_value：%d\n", update_connected_value);
   if(!s.isCanonical() || !s.isConnected()){
-    update_connected_value = false;
+    // if(!s.isCanonical()) printf("not canonical \n");
+    // if(!s.isConnected()) printf("not connected \n");
     return;
   }
 
@@ -208,7 +173,6 @@ void enumeration(Sequence& s){
   numBPG++;
   isParent = 0;
 
-  // if(s.isS1Root()){
   if(updateS1 == false){
     // case 1
     for(int i=s.s2.size()-1 ; i>0 ; i--){
@@ -217,9 +181,8 @@ void enumeration(Sequence& s){
         recover_point.push(i-1);
         update_is_s1 = false;
         enumeration(s);
-        // printf("update_connnected_value：%d\n", update_connected_value);
         if(update_connected_value == true) recover_connected_value_s2();
-        update_connected_value = true;
+        update_connected_value = false;
         swap(s.s2[recover_point.top()], s.s2[recover_point.top()+1]);
         recover_point.pop();
         break;
@@ -236,9 +199,8 @@ void enumeration(Sequence& s){
           recover_point.push(i-1);
           update_is_s1 = false;
           enumeration(s);
-          // printf("update_connnected_value：%d\n", update_connected_value);
           if(update_connected_value == true) recover_connected_value_s2();
-          update_connected_value = true;
+          update_connected_value = false;
           swap(s.s2[recover_point.top()], s.s2[recover_point.top()+1]);
           recover_point.pop();
         }
@@ -256,7 +218,7 @@ void enumeration(Sequence& s){
         enumeration(s);
         updateS1 = false;
         if(update_connected_value == true) recover_connected_value_s1();
-        update_connected_value = true;
+        update_connected_value = false;
         swap(s.s1[recover_point.top()], s.s1[recover_point.top()+1]);
         recover_point.pop();
         break;
@@ -271,20 +233,10 @@ void enumeration(Sequence& s){
         recover_point.push(i);
         update_is_s1 = true;
         updateS1 = true;
-          printf("case4 ");
-          for(int i=0; i<s.s1.size(); i++){
-            printf("%d",s.s1[i]);
-          }
-          printf(" ");
-          for(int i=0; i<s.s2.size(); i++){
-            printf("%d",s.s2[i]);
-          }
-          printf("\n");
         enumeration(s);
-        // printf("update_connnected_value：%d\n", update_connected_value);
         updateS1 = false;
         if(update_connected_value == true) recover_connected_value_s1();
-        update_connected_value = true;
+        update_connected_value = false;
         swap(s.s1[recover_point.top()], s.s1[recover_point.top()+1]);
         recover_point.pop();
         break;
@@ -301,20 +253,10 @@ void enumeration(Sequence& s){
           recover_point.push(i);
           update_is_s1 = true;
           updateS1 = true;
-            printf("case5 ");
-            for(int i=0; i<s.s1.size(); i++){
-              printf("%d",s.s1[i]);
-            }
-            printf(" ");
-            for(int i=0; i<s.s2.size(); i++){
-              printf("%d",s.s2[i]);
-            }
-            printf("\n");
           enumeration(s);
-          // printf("update_connnected_value：%d\n", update_connected_value);
           updateS1 = false;
           if(update_connected_value == true) recover_connected_value_s1();
-          update_connected_value = true;
+          update_connected_value = false;
           swap(s.s1[recover_point.top()], s.s1[recover_point.top()+1]);
           recover_point.pop();
         }
@@ -323,6 +265,7 @@ void enumeration(Sequence& s){
       if(s.s1[i] == LEFT && s.s1[i+1] == RIGHT) flag = true;
     }
   }
+  update_connected_value = true;
 }
 
 
