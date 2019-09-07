@@ -15,6 +15,7 @@ bool isParent = true;
 bool update_connected_value = false;
 bool update_n1 = false;
 bool is_s1_root = true;
+int update_value_0, update_value_1 = 0;
 
 class Sequence{
 public:
@@ -76,7 +77,7 @@ public:
   bool isConnected(){
     int c1, c2;
     c1 = c2 = 0;
-    int update_value_0, update_value_1 = 0;
+
     if(isParent == 1){
       for(int i=0 ; i<s1.size()-1 ; i++){
         if(s1[i] == LEFT) c1++;
@@ -94,18 +95,12 @@ public:
       update_value_1 = update_value_0 + 1;
       if(update_value_0 == connected_value_bottom[recover_point_s1.back()]) return false;
       if(update_value_1 == connected_value_bottom[recover_point_s1.back()+1]) return false;
-
-      connected_value_top[recover_point_s1.back()] = update_value_0;
-      connected_value_top[recover_point_s1.back()+1] = update_value_1;
     }
     else{
       update_value_0 = connected_value_bottom[recover_point_s2.back()-1] + 2;
       update_value_1 = update_value_0 - 1;
       if(connected_value_top[recover_point_s2.back()-1] == update_value_0) return false;
       if(connected_value_top[recover_point_s2.back()] == update_value_1) return false;
-
-      connected_value_bottom[recover_point_s2.back()-1] = update_value_0;
-      connected_value_bottom[recover_point_s2.back()] = update_value_1;
     }
     return true;
   }
@@ -171,7 +166,7 @@ void enumeration(Sequence& s){
   //         printf("%d",s.s2[i]);
   //       }
   //       printf("\n");
-  if(!s.isCanonical() || !s.isConnected()){
+  if(!s.isConnected() || !s.isCanonical()){
     //    if(!s.isCanonical()) printf("not canonical \n");
     //  if(!s.isConnected()) printf("not connected \n");
     return;
@@ -182,6 +177,8 @@ void enumeration(Sequence& s){
 
   if(isParent == false){
     if(is_s1_root == true){
+      connected_value_bottom[recover_point_s2.back()-1] = update_value_0;
+      connected_value_bottom[recover_point_s2.back()] = update_value_1;
       // if(recover_point_s2.back() == s.s2.size() || recover_point_s2.back() == 0) return;
       if(update_n1 == true){
         if(s.s2[recover_point_s2.back()]+2 == LEFT){
@@ -297,6 +294,8 @@ void enumeration(Sequence& s){
     }
 
     else{
+      connected_value_top[recover_point_s1.back()] = update_value_0;
+      connected_value_top[recover_point_s1.back()+1] = update_value_1;
     // else if(is_s1_root == false){
       if(update_n1 == true){
         // if(recover_point_s1.back() == s.s1.size()-1 || recover_point_s1.back() == -1) return;
